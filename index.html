@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>マギレコ確率計算</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      padding: 30px;
+      text-align: center;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 30px;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 3px solid #4facfe;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: #4facfe;
+      border-radius: 50%;
+    }
+
+    .input-group {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .input-group:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      border-color: #4facfe;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 1rem;
+    }
+
+    .main-input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      transition: all 0.3s ease;
+      margin-bottom: 12px;
+    }
+
+    .main-input:focus {
+      outline: none;
+      border-color: #4facfe;
+      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+    }
+
+    .add-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .add-input {
+      flex: 1;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      background: white;
+      transition: all 0.3s ease;
+    }
+
+    .add-input:focus {
+      outline: none;
+      border-color: #4facfe;
+      box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.1);
+    }
+
+    .add-btn {
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .add-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+    }
+
+    .add-btn:active {
+      transform: translateY(0);
+    }
+
+    .results {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+
+    .results h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 20px;
+      text-align: center;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      transition: all 0.3s ease;
+    }
+
+    .result-item:hover {
+      background: #f8fafc;
+      margin: 0 -10px;
+      padding: 12px 10px;
+      border-radius: 8px;
+    }
+
+    .result-item:last-child {
+      border-bottom: none;
+    }
+
+    .result-label {
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .result-value {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #2b6cb0;
+      background: #ebf8ff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .setting-info {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+      padding: 15px;
+      border-radius: 10px;
+      border-left: 4px solid #4facfe;
+    }
+
+    .setting-info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 10px;
+    }
+
+    .setting-info .setting-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+
+    .setting-info .setting-row:nth-child(even) {
+      background: rgba(255, 255, 255, 0.5);
+      margin: 0 -10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .add-group {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .add-input, .add-btn {
+        width: 100%;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container fade-in">
+    <div class="header">
+      <h1>🎰 マギレコ確率計算ツール</h1>
+      <p>パチスロの小役・ボーナス確率を簡単計算</p>
+    </div>
+
+    <div class="main-content">
+      <div class="input-section">
+        <div class="section-title">🎰ゲーム数</div>
+        
+        <div class="input-group">
+          <label for="games">総ゲーム数</label>
+          <input type="number" id="games" class="main-input" placeholder="例: 7385" />
+          <div class="add-group">
+            <input type="number" id="add-games" class="add-input" placeholder="追加ゲーム数" />
+            <button class="add-btn" onclick="addValue('games')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="normal">通常時ゲーム数</label>
+          <input type="number" id="normal" class="main-input" placeholder="例: 3450" />
+          <div class="add-group">
+            <input type="number" id="add-normal" class="add-input" placeholder="追加ゲーム数" />
+            <button class="add-btn" onclick="addValue('normal')">追加</button>
+          </div>
+        </div>
+
+        <div class="section-title">🍒 小役カウント</div>
+
+        <div class="input-group">
+          <label for="weak">弱チェリー</label>
+          <input type="number" id="weak" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-weak" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('weak')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="strong">強チェリー</label>
+          <input type="number" id="strong" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-strong" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('strong')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="suika">スイカ</label>
+          <input type="number" id="suika" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-suika" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('suika')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="chanceA">チャンス目A</label>
+          <input type="number" id="chanceA" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-chanceA" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('chanceA')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="chanceB">チャンス目B</label>
+          <input type="number" id="chanceB" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-chanceB" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('chanceB')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="middle">中段チェリー</label>
+          <input type="number" id="middle" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-middle" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('middle')">追加</button>
+          </div>
+        </div>
+
+        <div class="section-title">🎊 ボーナス・AT</div>
+
+        <div class="input-group">
+          <label for="bonus">ボーナス初当たり</label>
+          <input type="number" id="bonus" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-bonus" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('bonus')">追加</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="at">AT初当たり</label>
+          <input type="number" id="at" class="main-input" placeholder="回数を入力" />
+          <div class="add-group">
+            <input type="number" id="add-at" class="add-input" placeholder="追加回数" />
+            <button class="add-btn" onclick="addValue('at')">追加</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="results">
+        <h2>📈 計算結果</h2>
+
+        <div class="result-item">
+          <span class="result-label">弱チェリー</span>
+          <span class="result-value" id="res-weak">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">強チェリー</span>
+          <span class="result-value" id="res-strong">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">スイカ</span>
+          <span class="result-value" id="res-suika">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">チャンス目A</span>
+          <span class="result-value" id="res-chanceA">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">チャンス目B</span>
+          <span class="result-value" id="res-chanceB">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">中段チェリー</span>
+          <span class="result-value" id="res-middle">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">ボーナス初当たり</span>
+          <span class="result-value" id="res-bonus">1/-</span>
+        </div>
+
+        <div class="result-item">
+          <span class="result-label">AT初当たり</span>
+          <span class="result-value" id="res-at">1/-</span>
+        </div>
+          <div class="setting-info">
+          <h3>📋 弱チェリー設定差参考値</h3>
+          <div class="setting-row">
+            <span>設定1</span>
+            <span>1/60.0</span>
+          </div>
+          <div class="setting-row">
+            <span>設定2</span>
+            <span>1/57.7</span>
+          </div>
+          <div class="setting-row">
+            <span>設定3</span>
+            <span>1/55.5</span>
+          </div>
+          <div class="setting-row">
+            <span>設定4</span>
+            <span>1/53.5</span>
+          </div>
+          <div class="setting-row">
+            <span>設定5</span>
+            <span>1/51.7</span>
+          </div>
+          <div class="setting-row">
+            <span>設定6</span>
+            <span>1/50.0</span>
+          </div>
+        </div>
+        　<div class="setting-info">
+          <h3>📋 ボーナス、AT初当たり参考値</h3>
+          <div class="setting-row">
+            <span>設定1</span>
+            <span>ボナ 1/240.6 AT 1/654.6</span>
+          </div>
+          <div class="setting-row">
+            <span>設定2</span>
+            <span>ボナ 1/236.1 AT 1/633.4</span>
+          </div>
+          <div class="setting-row">
+            <span>設定3</span>
+            <span>ボナ 1/222.8 AT 1/571.8</span>
+          </div>
+          <div class="setting-row">
+            <span>設定4</span>
+            <span>ボナ 1/208.5 AT 1/516.6</span>
+          </div>
+          <div class="setting-row">
+            <span>設定5</span>
+            <span>ボナ 1/195.1 AT 1/456.5</span>
+          </div>
+          <div class="setting-row">
+            <span>設定6</span>
+            <span>ボナ 1/184.3 AT 1/416.7</span>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const normalBasedFields = [
+      { id: 'bonus', label: 'res-bonus' },
+      { id: 'at', label: 'res-at' }
+    ];
+
+    const gameBasedFields = [
+      { id: 'weak', label: 'res-weak' },
+      { id: 'strong', label: 'res-strong' },
+      { id: 'suika', label: 'res-suika' },
+      { id: 'chanceA', label: 'res-chanceA' },
+      { id: 'chanceB', label: 'res-chanceB' },
+      { id: 'middle', label: 'res-middle' }
+    ];
+
+    const updateResults = () => {
+      const totalGames = parseInt(document.getElementById('games').value);
+      const normalGames = parseInt(document.getElementById('normal').value);
+
+      gameBasedFields.forEach(({ id, label }) => {
+        const value = parseInt(document.getElementById(id).value);
+        const result = document.getElementById(label);
+        if (!totalGames || isNaN(value) || value === 0) {
+          result.textContent = "1/-";
+          result.style.background = "#f7fafc";
+          result.style.color = "#a0aec0";
+        } else {
+          const probability = (totalGames / value).toFixed(2);
+          result.textContent = "1/" + probability;
+          result.style.background = "#ebf8ff";
+          result.style.color = "#2b6cb0";
+        }
+      });
+
+      normalBasedFields.forEach(({ id, label }) => {
+        const value = parseInt(document.getElementById(id).value);
+        const result = document.getElementById(label);
+        if (!normalGames || isNaN(value) || value === 0) {
+          result.textContent = "1/-";
+          result.style.background = "#f7fafc";
+          result.style.color = "#a0aec0";
+        } else {
+          const probability = (normalGames / value).toFixed(2);
+          result.textContent = "1/" + probability;
+          result.style.background = "#ebf8ff";
+          result.style.color = "#2b6cb0";
+        }
+      });
+    };
+
+    const addValue = (id) => {
+      const baseInput = document.getElementById(id);
+      const addInput = document.getElementById("add-" + id);
+      const base = parseInt(baseInput.value) || 0;
+      const toAdd = parseInt(addInput.value);
+      
+      if (!isNaN(toAdd) && toAdd > 0) {
+        baseInput.value = base + toAdd;
+        addInput.value = '';
+        updateResults();
+        
+        // 追加時のフィードバック
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '追加完了!';
+        button.style.background = '#48bb78';
+        
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.style.background = '';
+        }, 1000);
+      }
+    };
+
+    // イベントリスナーの設定
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', updateResults);
+      
+      // エンターキーでの追加機能
+      if (input.id.startsWith('add-')) {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            const baseId = input.id.replace('add-', '');
+            addValue(baseId);
+          }
+        });
+      }
+    });
+
+    // 初期化
+    updateResults();
+  </script>
+</body>
+</html>
